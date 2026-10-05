@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "overstep"
+version = "0.1.0"
+description = "Authorization / BOLA differential tester — replay captured requests across identities and flag broken object/function-level authorization. Zero-dependency, scope-gated."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "foodstampplug" }]
+keywords = ["bug-bounty", "security", "authorization", "idor", "bola", "bfla", "pentest"]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/foodstampplug/overstep"
+
+[project.scripts]
+overstep = "overstep.cli:main"
+
+[tool.setuptools]
+packages = ["overstep"]

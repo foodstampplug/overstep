@@ -1,0 +1,10 @@
+# overstep scope file — ONLY hosts you are authorized to test.
+# One rule per line. '#' comments and blank lines ignored.
+#
+#   api.target.com      exact host
+#   *.target.com        the domain and any subdomain
+#   10.0.0.0/8          CIDR (matches literal-IP hosts only)
+#   !admin.target.com   exclusion — never in scope, even if an include matches
+
+*.target.com
+!internal.target.com

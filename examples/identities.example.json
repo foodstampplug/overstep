@@ -1,0 +1,9 @@
+{
+  "auth_headers": ["cookie", "authorization", "x-api-key", "x-auth-token", "x-access-token", "x-session-token"],
+  "identities": [
+    {"name": "alice", "role": "owner",   "headers": {"Cookie": "session=PASTE_ALICE_COOKIE"}},
+    {"name": "bob",   "role": "peer",     "headers": {"Cookie": "session=PASTE_BOB_COOKIE"}},
+    {"name": "low",   "role": "lowpriv",  "headers": {"Authorization": "Bearer PASTE_LOWPRIV_TOKEN"}},
+    {"name": "anon",  "role": "unauth",   "headers": {}}
+  ]
+}

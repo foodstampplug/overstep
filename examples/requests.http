@@ -1,0 +1,14 @@
+GET /api/v1/orders/44120 HTTP/1.1
+Host: api.target.com
+Cookie: session=PASTE_ALICE_COOKIE
+Accept: application/json
+
+>>>>
+GET /api/v1/users/9001/profile HTTP/1.1
+Host: api.target.com
+Cookie: session=PASTE_ALICE_COOKIE
+
+>>>>
+GET /admin/reports/export HTTP/1.1
+Host: api.target.com
+Cookie: session=PASTE_ALICE_COOKIE
