@@ -9,7 +9,12 @@ Zero third-party dependencies. Scope-gated. Safe (read) methods only unless you 
 **authorized** bug-bounty / pentest work on assets in your program's scope.
 
 ```
-overstep 0.1.0 — authorization differential
+  _____   _____ _ __ ___| |_ ___ _ __
+ / _ \ \ / / _ \ '__/ __| __/ _ \ '_ \
+| (_) \ V /  __/ |  \__ \ ||  __/ |_) |
+ \___/ \_/ \___|_|  |___/\__\___| .__/
+                                |_|
+  authorization / BOLA differential tester · v0.1.0
 
 GET /orders/1001
     bob           peer      BYPASSED      owner=200 cand=200 sim=1.00 len=1.00  → BOLA / IDOR (cross-user object access)

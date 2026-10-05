@@ -11,19 +11,21 @@ observed (so a pipeline can gate on it), and 2 on a usage/IO error.
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 
 from . import __version__, report
+from .banner import banner
 from .capture import load_requests
 from .identities import IdentityError, IdentitySet, template
 from .replay import SAFE_METHODS, WRITE_METHODS, run as replay_run
 from .scope import Scope
 
-_BANNER = (
-    f"overstep {__version__} — authorization / BOLA differential tester\n"
-    "Authorized testing only · in-scope targets only · safe (read) methods unless "
-    "--include-writes.\n"
-)
+
+def _stderr_color() -> bool:
+    if os.environ.get("NO_COLOR"):
+        return False
+    return hasattr(sys.stderr, "isatty") and sys.stderr.isatty()
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -90,7 +92,7 @@ def _cmd_run(args) -> int:
     else:
         allowed = SAFE_METHODS + (WRITE_METHODS if args.include_writes else ())
 
-    sys.stderr.write(_BANNER + "\n")
+    sys.stderr.write(banner(color=_stderr_color()) + "\n")
     if any(m in WRITE_METHODS for m in allowed):
         sys.stderr.write(
             "!! write methods are enabled — replays may modify other users' data. "
