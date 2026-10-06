@@ -5,239 +5,225 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>overstep</title>
 <style>
-  :root{
-    --bg:#0d1117; --panel:#161b22; --panel2:#0b0f14; --line:#232b36;
-    --fg:#e6edf3; --muted:#8b949e; --accent:#39d0d8;
-    --red:#ff6b6b; --amber:#f2c661; --green:#4ec97a; --purple:#c792ea; --gray:#6e7681;
-    --radius:10px;
-  }
+  :root{--bg:#0d1117;--panel:#161b22;--panel2:#0b0f14;--line:#232b36;--fg:#e6edf3;
+    --muted:#8b949e;--accent:#39d0d8;--red:#ff6b6b;--amber:#f2c661;--green:#4ec97a;
+    --purple:#c792ea;--gray:#6e7681;--radius:10px}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--fg);
     font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  header{border-bottom:1px solid var(--line);padding:18px 24px;display:flex;
+  header{border-bottom:1px solid var(--line);padding:16px 24px;display:flex;
     align-items:baseline;gap:14px;flex-wrap:wrap;background:var(--panel2)}
-  header .wm{font-family:ui-monospace,monospace;font-weight:700;font-size:22px;
-    letter-spacing:.5px;color:var(--accent)}
+  header .wm{font-family:ui-monospace,monospace;font-weight:700;font-size:22px;letter-spacing:.5px;color:var(--accent)}
   header .ver{color:var(--muted);font-size:12px}
   header .tag{color:var(--muted);font-size:12px;margin-left:auto}
-  .chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;
-    border:1px solid var(--line);color:var(--muted)}
-  main{max-width:1100px;margin:0 auto;padding:22px 16px;display:grid;gap:18px}
+  .chip{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;border:1px solid var(--line);color:var(--muted)}
+  main{max-width:1100px;margin:0 auto;padding:20px 16px;display:grid;gap:16px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
   @media(max-width:820px){.grid{grid-template-columns:1fr}}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
   .card h2{margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
-  .card .hint{color:var(--muted);font-size:12px;margin:0 0 8px}
+  .hint{color:var(--muted);font-size:12px;margin:0 0 8px}
   label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
-  textarea,input[type=text],input[type=number],select{
-    width:100%;background:var(--panel2);color:var(--fg);border:1px solid var(--line);
-    border-radius:8px;padding:9px 10px;font-family:ui-monospace,monospace;font-size:12.5px}
-  textarea{resize:vertical;min-height:120px}
+  textarea,input[type=text],input[type=number],select{width:100%;background:var(--panel2);color:var(--fg);
+    border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-family:ui-monospace,monospace;font-size:12.5px}
+  textarea{resize:vertical;min-height:110px}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
   .row>div{flex:1;min-width:120px}
-  .btn{background:var(--accent);color:#04181a;border:0;border-radius:8px;padding:10px 16px;
-    font-weight:600;cursor:pointer;font-size:14px}
-  .btn:hover{filter:brightness(1.08)}
+  .btn{background:var(--accent);color:#04181a;border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;font-size:14px}
+  .btn:hover{filter:brightness(1.08)} .btn:disabled{opacity:.5;cursor:default}
   .btn.sec{background:transparent;color:var(--fg);border:1px solid var(--line);font-weight:500}
-  .btn:disabled{opacity:.5;cursor:default}
   .mini{font-size:12px;padding:5px 10px}
   .check{display:flex;align-items:center;gap:7px;color:var(--fg);font-size:13px;margin-top:6px}
   .check input{width:auto}
   .warn{color:var(--amber);font-size:11.5px;margin-top:4px}
-  #err{display:none;background:#2d1417;border:1px solid var(--red);color:#ffb4b4;
-    padding:10px 12px;border-radius:8px;white-space:pre-wrap}
+  #err{display:none;background:#2d1417;border:1px solid var(--red);color:#ffb4b4;padding:10px 12px;border-radius:8px;white-space:pre-wrap}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+  .tab{padding:9px 16px;cursor:pointer;color:var(--muted);border:1px solid transparent;border-bottom:none;
+    border-radius:8px 8px 0 0;font-size:13px}
+  .tab.active{color:var(--accent);background:var(--panel);border-color:var(--line)}
+  .panel{display:none} .panel.active{display:grid;gap:16px}
   .summary{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-  .vchip{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;
-    padding:2px 8px;border-radius:6px;color:#04181a}
-  .v-BYPASSED{background:var(--red)} .v-UNCLEAR{background:var(--amber)}
-  .v-ENFORCED{background:var(--green)} .v-OWNER_FAILED{background:var(--purple)}
-  .v-ERROR{background:var(--gray);color:#fff}
+  .vchip{font-family:ui-monospace,monospace;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:6px;color:#04181a}
+  .v-BYPASSED{background:var(--red)} .v-UNCLEAR{background:var(--amber)} .v-ENFORCED{background:var(--green)}
+  .v-OWNER_FAILED{background:var(--purple)} .v-ERROR{background:var(--gray);color:#fff}
+  .v-HIT{background:var(--red)} .v-MISS{background:var(--green)}
   .reqgroup{border:1px solid var(--line);border-radius:8px;margin:10px 0;overflow:hidden}
-  .reqgroup>.rhead{background:var(--panel2);padding:8px 12px;font-family:ui-monospace,monospace;
-    font-size:13px;border-bottom:1px solid var(--line)}
-  table{width:100%;border-collapse:collapse}
-  td,th{padding:7px 12px;text-align:left;font-size:12.5px;border-top:1px solid var(--line)}
-  th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase}
-  td.mono{font-family:ui-monospace,monospace}
-  .role{color:var(--muted)}
-  .label{color:var(--fg)}
-  .foot{color:var(--muted);font-size:11.5px;text-align:center;padding:10px}
-  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);
-    border-top-color:var(--accent);border-radius:50%;animation:s .7s linear infinite;vertical-align:-2px}
-  @keyframes s{to{transform:rotate(360deg)}}
+  .reqgroup>.rhead{background:var(--panel2);padding:8px 12px;font-family:ui-monospace,monospace;font-size:13px;border-bottom:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse} td,th{padding:7px 12px;text-align:left;font-size:12.5px;border-top:1px solid var(--line)}
+  th{color:var(--muted);font-weight:500;font-size:11px;text-transform:uppercase} td.mono{font-family:ui-monospace,monospace}
+  .role{color:var(--muted)} .foot{color:var(--muted);font-size:11.5px;text-align:center;padding:10px}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);
+    border-radius:50%;animation:s .7s linear infinite;vertical-align:-2px} @keyframes s{to{transform:rotate(360deg)}}
+  code{background:var(--panel2);padding:1px 5px;border-radius:4px}
+  .big{font-size:18px;font-weight:700}
 </style>
 </head>
 <body>
 <header>
-  <span class="wm">overstep</span>
-  <span class="ver">v__OVERSTEP_VERSION__</span>
+  <span class="wm">overstep</span><span class="ver">v__OVERSTEP_VERSION__ · Pro</span>
   <span class="tag">authorization / BOLA differential tester
-    &nbsp;·&nbsp; <span class="chip">local-only</span>
-    <span class="chip">scope-gated</span></span>
+    &nbsp;·&nbsp; <span class="chip">local-only</span> <span class="chip">scope-gated</span></span>
 </header>
 
 <main>
   <div id="err"></div>
 
+  <!-- shared inputs -->
   <div class="grid">
     <div class="card">
       <h2>Scope</h2>
-      <p class="hint">Only hosts you are authorized to test. One rule per line
-        (<span class="mono">*.target.com</span>, <span class="mono">api.target.com</span>,
-        <span class="mono">10.0.0.0/8</span>, <span class="mono">!admin.target.com</span>).</p>
-      <textarea id="scope" placeholder="*.target.com&#10;!internal.target.com"></textarea>
+      <p class="hint">Authorized hosts only, one rule per line (<span class="mono">*.target.com</span>, <span class="mono">10.0.0.0/8</span>, <span class="mono">!admin.target.com</span>).</p>
+      <textarea id="scope" placeholder="*.target.com"></textarea>
     </div>
-
     <div class="card">
       <h2>Identities</h2>
-      <p class="hint">One <span class="mono">owner</span> (the account you captured as) plus
-        <span class="mono">peer</span> / <span class="mono">lowpriv</span> / <span class="mono">unauth</span>.
-        <a href="#" id="tpl" style="color:var(--accent)">load template</a></p>
+      <p class="hint">One <span class="mono">owner</span> + peer/lowpriv/unauth. <a href="#" id="tpl" style="color:var(--accent)">load template</a></p>
       <textarea id="identities" class="mono" placeholder='{ "identities": [ ... ] }'></textarea>
     </div>
   </div>
 
-  <div class="card">
-    <h2>Captured requests</h2>
-    <p class="hint">Paste a HAR export or raw HTTP request(s). Separate multiple raw requests
-      with a line of <span class="mono">&gt;&gt;&gt;&gt;</span>.
-      <input type="file" id="file" accept=".har,.txt,.http,.json" style="display:none">
-      <a href="#" id="loadfile" style="color:var(--accent)">load from file…</a></p>
-    <textarea id="requests" style="min-height:150px"
-      placeholder="GET /api/orders/1001 HTTP/1.1&#10;Host: api.target.com&#10;Cookie: session=OWNER&#10;"></textarea>
+  <div class="tabs">
+    <div class="tab active" data-t="run">Run &mdash; differential</div>
+    <div class="tab" data-t="enum">Enum &mdash; scale a BOLA</div>
+    <div class="tab" data-t="labs">Labs &mdash; train</div>
+  </div>
 
-    <div class="row" style="margin-top:12px">
-      <div><label>Scheme (raw reqs)</label>
-        <select id="scheme"><option>https</option><option>http</option></select></div>
-      <div><label>Delay (s)</label><input type="number" id="delay" value="0.3" step="0.1" min="0"></div>
-      <div><label>Methods (optional)</label><input type="text" id="methods" placeholder="GET,HEAD,OPTIONS"></div>
+  <!-- RUN -->
+  <div class="panel active" id="p-run">
+    <div class="card">
+      <h2>Captured requests</h2>
+      <p class="hint">Paste a HAR export or raw HTTP request(s), split multiples with <span class="mono">&gt;&gt;&gt;&gt;</span>.</p>
+      <textarea id="requests" style="min-height:150px" placeholder="GET /api/orders/1001 HTTP/1.1&#10;Host: api.target.com&#10;Cookie: session=OWNER&#10;"></textarea>
+      <div class="row" style="margin-top:12px">
+        <div><label>Scheme (raw)</label><select id="scheme"><option>https</option><option>http</option></select></div>
+        <div><label>Delay (s)</label><input type="number" id="delay" value="0.3" step="0.1" min="0"></div>
+        <div><label>Methods (optional)</label><input type="text" id="methods" placeholder="GET,HEAD,OPTIONS"></div>
+      </div>
+      <label class="check"><input type="checkbox" id="verify"> Verify TLS</label>
+      <label class="check"><input type="checkbox" id="writes"> Include write methods (can mutate data)</label>
+      <div class="row" style="margin-top:14px"><button class="btn" id="run">Run differential</button><span id="runstate" class="hint" style="margin:0"></span></div>
     </div>
-    <label class="check"><input type="checkbox" id="verify"> Verify TLS certificates</label>
-    <label class="check"><input type="checkbox" id="writes"> Include write methods (POST/PUT/PATCH/DELETE)</label>
-    <div class="warn" id="wwarn" style="display:none">⚠ Replaying writes as another identity can modify their data. Only with authorization.</div>
-
-    <div class="row" style="margin-top:14px">
-      <button class="btn" id="run">Run differential</button>
-      <span id="runstate" class="hint" style="margin:0"></span>
+    <div class="card" id="run-results" style="display:none">
+      <h2>Results</h2>
+      <div class="summary" id="run-summary"></div>
+      <label class="check"><input type="checkbox" id="showall"> show ENFORCED / ERROR rows</label>
+      <div id="run-matrix"></div>
+      <div class="row" style="margin-top:12px"><button class="btn sec mini" id="dljson">Download JSON</button><button class="btn sec mini" id="dlmd">Download Markdown</button></div>
     </div>
   </div>
 
-  <div class="card" id="results" style="display:none">
-    <h2>Results</h2>
-    <div class="summary" id="summary"></div>
-    <label class="check"><input type="checkbox" id="showall"> show ENFORCED / ERROR rows</label>
-    <div id="matrix"></div>
-    <div class="row" style="margin-top:12px">
-      <button class="btn sec mini" id="dljson">Download JSON</button>
-      <button class="btn sec mini" id="dlmd">Download Markdown</button>
+  <!-- ENUM -->
+  <div class="panel" id="p-enum">
+    <div class="card">
+      <h2>Enumerate an ID range</h2>
+      <p class="hint">Scale one BOLA: walk an ID range as a chosen identity. Put the marker where the ID goes.</p>
+      <label>URL template (marker where the ID goes)</label>
+      <input type="text" id="e-url" class="mono" placeholder="https://api.target.com/v1/orders/§ID§">
+      <div class="row" style="margin-top:10px">
+        <div><label>As identity</label><input type="text" id="e-as" placeholder="bob"></div>
+        <div><label>Range (A-B)</label><input type="text" id="e-range" placeholder="1000-1200"></div>
+        <div><label>or IDs (csv)</label><input type="text" id="e-ids" placeholder="1001,1002"></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div><label>Marker</label><input type="text" id="e-marker" value="§ID§" class="mono"></div>
+        <div><label>Delay (s)</label><input type="number" id="e-delay" value="0.2" step="0.1" min="0"></div>
+        <div><label>Max IDs</label><input type="number" id="e-max" value="200" min="1"></div>
+      </div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="enum">Enumerate</button><span id="enumstate" class="hint" style="margin:0"></span></div>
+    </div>
+    <div class="card" id="enum-results" style="display:none">
+      <h2>Results</h2>
+      <div id="enum-summary"></div>
+      <div id="enum-body"></div>
     </div>
   </div>
 
-  <div class="foot">overstep — authorized testing only · built by Dev (@foodstampplug)</div>
+  <!-- LABS -->
+  <div class="panel" id="p-labs">
+    <div class="card">
+      <h2>Bug-hunter training range</h2>
+      <p class="hint">12 intentionally-vulnerable labs — IDOR, BOLA, privesc, mass-assignment, price manipulation,
+        a live race condition, XSS, open redirect, SSRF, JWT forgery, and prompt injection. Each yields a flag you
+        get by exploiting it. Localhost only, nothing live.</p>
+      <p>Start it from your terminal:</p>
+      <p><code class="mono big">python3 -m overstep labs</code></p>
+      <p class="hint">It serves <span class="mono">http://127.0.0.1:8800</span> and opens automatically. Solve a
+        lab, paste the <span class="mono">FLAG{…}</span> it returns, and the range tracks your progress. Practice the
+        Run and Enum tabs here against those same labs.</p>
+      <p><a class="btn sec mini" href="http://127.0.0.1:8800" target="_blank" rel="noopener">Open labs (if running) &#8599;</a></p>
+    </div>
+  </div>
+
+  <div class="foot">overstep Pro — authorized testing only · built by Dev (@foodstampplug)</div>
 </main>
 
 <script>
 const TOKEN = "__OVERSTEP_TOKEN__";
 const $ = id => document.getElementById(id);
-const TEMPLATE = {
-  auth_headers:["cookie","authorization","x-api-key","x-auth-token","x-access-token","x-session-token"],
-  identities:[
-    {name:"alice",role:"owner",headers:{Cookie:"session=PASTE_ALICE"}},
+const TEMPLATE = {auth_headers:["cookie","authorization","x-api-key","x-auth-token","x-access-token","x-session-token"],
+  identities:[{name:"alice",role:"owner",headers:{Cookie:"session=PASTE_ALICE"}},
     {name:"bob",role:"peer",headers:{Cookie:"session=PASTE_BOB"}},
     {name:"low",role:"lowpriv",headers:{Authorization:"Bearer PASTE_LOW"}},
-    {name:"anon",role:"unauth",headers:{}}
-  ]
-};
-let LAST = null;
+    {name:"anon",role:"unauth",headers:{}}]};
+let LAST=null;
+$("tpl").onclick=e=>{e.preventDefault();$("identities").value=JSON.stringify(TEMPLATE,null,2);};
+$("writes").onchange=e=>{};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active"); $("p-"+t.dataset.t).classList.add("active");
+});
+$("showall").onchange=()=>{ if(LAST) renderRunMatrix(LAST); };
+function showErr(m){const e=$("err");e.textContent=m;e.style.display="block";window.scrollTo(0,0);}
+function clearErr(){$("err").style.display="none";}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function fmt(x){return (x===0||x)?Number(x).toFixed(2):""}
+function dl(name,text,type){const b=new Blob([text],{type});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href);}
 
-$("tpl").onclick = e => { e.preventDefault(); $("identities").value = JSON.stringify(TEMPLATE,null,2); };
-$("loadfile").onclick = e => { e.preventDefault(); $("file").click(); };
-$("file").onchange = e => {
-  const f = e.target.files[0]; if(!f) return;
-  const r = new FileReader(); r.onload = () => $("requests").value = r.result; r.readAsText(f);
-};
-$("writes").onchange = e => { $("wwarn").style.display = e.target.checked ? "block":"none"; };
-$("showall").onchange = () => { if(LAST) renderMatrix(LAST); };
-
-function showErr(msg){ const e=$("err"); e.textContent=msg; e.style.display="block"; }
-function clearErr(){ $("err").style.display="none"; }
-
-async function run(){
-  clearErr();
-  const body = {
-    token: TOKEN,
-    scope: $("scope").value,
-    identities: $("identities").value,
-    requests: $("requests").value,
-    scheme: $("scheme").value,
-    delay: $("delay").value,
-    methods: $("methods").value,
-    verify: $("verify").checked,
-    include_writes: $("writes").checked
-  };
-  $("run").disabled = true;
-  $("runstate").innerHTML = '<span class="spin"></span> running…';
-  try{
-    const res = await fetch("/api/run",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
-    const data = await res.json();
-    if(!res.ok){ showErr(data.error || ("HTTP "+res.status)); return; }
-    LAST = data; renderSummary(data); renderMatrix(data); $("results").style.display="block";
-    $("results").scrollIntoView({behavior:"smooth",block:"nearest"});
-  }catch(err){ showErr(String(err)); }
-  finally{ $("run").disabled=false; $("runstate").textContent=""; }
-}
-$("run").onclick = run;
-
-function renderSummary(d){
-  const c = d.counts || {};
-  const order = ["BYPASSED","UNCLEAR","ENFORCED","OWNER_FAILED","ERROR"];
-  let html = order.filter(v=>c[v]).map(v=>`<span class="vchip v-${v}">${c[v]} ${v}</span>`).join(" ");
-  if(d.skipped && d.skipped.length) html += ` <span class="chip">${d.skipped.length} skipped</span>`;
-  if(!html) html = '<span class="chip">no results</span>';
-  $("summary").innerHTML = html;
+async function post(route,body){
+  body.token=TOKEN; body.scope=$("scope").value; body.identities=$("identities").value;
+  const res=await fetch(route,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const data=await res.json(); if(!res.ok) throw new Error(data.error||("HTTP "+res.status)); return data;
 }
 
-function renderMatrix(d){
-  const showAll = $("showall").checked;
-  const groups = {};
-  (d.findings||[]).forEach(f=>{ (groups[f.request] = groups[f.request]||[]).push(f); });
-  let html = "";
-  Object.keys(groups).forEach(req=>{
-    const rows = groups[req];
-    const visible = rows.filter(r => showAll || r.verdict==="BYPASSED" || r.verdict==="UNCLEAR" || r.verdict==="OWNER_FAILED");
-    if(!visible.length) return;
-    html += `<div class="reqgroup"><div class="rhead">${esc(req)}</div><table>`;
-    html += `<tr><th>identity</th><th>role</th><th>verdict</th><th>owner</th><th>cand</th><th>sim</th><th>len</th><th>finding</th></tr>`;
-    visible.forEach(r=>{
-      html += `<tr>
-        <td class="mono">${esc(r.identity)}</td>
-        <td class="role">${esc(r.role)}</td>
-        <td><span class="vchip v-${r.verdict}">${r.verdict}</span></td>
-        <td class="mono">${r.owner_status||""}</td>
-        <td class="mono">${r.candidate_status||""}</td>
-        <td class="mono">${fmt(r.similarity)}</td>
-        <td class="mono">${fmt(r.length_ratio)}</td>
-        <td class="label">${esc(r.label||r.note||"")}</td>
-      </tr>`;
-    });
-    html += `</table></div>`;
-  });
-  if(d.skipped && d.skipped.length){
-    html += `<div class="hint" style="margin-top:8px">skipped: ` +
-      d.skipped.map(s=>`${esc(s.request)} (${esc(s.reason)})`).join("; ") + `</div>`;
-  }
-  $("matrix").innerHTML = html || '<p class="hint">Nothing to show. Toggle “show ENFORCED/ERROR rows”.</p>';
-}
+// RUN
+$("run").onclick=async()=>{clearErr();$("run").disabled=true;$("runstate").innerHTML='<span class="spin"></span> running…';
+  try{ const d=await post("/api/run",{requests:$("requests").value,scheme:$("scheme").value,delay:$("delay").value,
+    methods:$("methods").value,verify:$("verify").checked,include_writes:$("writes").checked});
+    LAST=d; renderRunSummary(d); renderRunMatrix(d); $("run-results").style.display="block";
+  }catch(e){showErr(String(e.message||e));}finally{$("run").disabled=false;$("runstate").textContent="";}};
+function renderRunSummary(d){const c=d.counts||{};const o=["BYPASSED","UNCLEAR","ENFORCED","OWNER_FAILED","ERROR"];
+  let h=o.filter(v=>c[v]).map(v=>`<span class="vchip v-${v}">${c[v]} ${v}</span>`).join(" ");
+  if(d.skipped&&d.skipped.length)h+=` <span class="chip">${d.skipped.length} skipped</span>`;
+  $("run-summary").innerHTML=h||'<span class="chip">no results</span>';}
+function renderRunMatrix(d){const showAll=$("showall").checked;const g={};const ord=[];
+  (d.findings||[]).forEach(f=>{if(!g[f.request]){g[f.request]=[];ord.push(f.request);}g[f.request].push(f);});
+  let html="";ord.forEach(req=>{const rows=g[req];
+    const vis=rows.filter(r=>showAll||["BYPASSED","UNCLEAR","OWNER_FAILED"].includes(r.verdict));
+    if(!vis.length)return;
+    html+=`<div class="reqgroup"><div class="rhead">${esc(req)}</div><table><tr><th>identity</th><th>role</th><th>verdict</th><th>owner</th><th>cand</th><th>sim</th><th>finding</th></tr>`;
+    vis.forEach(r=>{html+=`<tr><td class="mono">${esc(r.identity)}</td><td class="role">${esc(r.role)}</td>
+      <td><span class="vchip v-${r.verdict}">${r.verdict}</span></td><td class="mono">${r.owner_status||""}</td>
+      <td class="mono">${r.candidate_status||""}</td><td class="mono">${fmt(r.similarity)}</td><td>${esc(r.label||r.note||"")}</td></tr>`;});
+    html+="</table></div>";});
+  $("run-matrix").innerHTML=html||'<p class="hint">Nothing flagged. Toggle “show ENFORCED/ERROR”.</p>';}
+$("dljson").onclick=()=>{if(LAST)dl("overstep-findings.json",LAST.json||JSON.stringify(LAST,null,2),"application/json");};
+$("dlmd").onclick=()=>{if(LAST)dl("overstep-report.md",LAST.markdown||"","text/markdown");};
 
-function fmt(x){ return (x===0||x) ? Number(x).toFixed(2) : ""; }
-function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-function download(name, text, type){
-  const b = new Blob([text],{type}); const a=document.createElement("a");
-  a.href=URL.createObjectURL(b); a.download=name; a.click(); URL.revokeObjectURL(a.href);
-}
-$("dljson").onclick = () => { if(LAST) download("overstep-findings.json", LAST.json || JSON.stringify(LAST,null,2), "application/json"); };
-$("dlmd").onclick = () => { if(LAST) download("overstep-report.md", LAST.markdown || "", "text/markdown"); };
+// ENUM
+$("enum").onclick=async()=>{clearErr();$("enum").disabled=true;$("enumstate").innerHTML='<span class="spin"></span> enumerating…';
+  try{ const d=await post("/api/enum",{url:$("e-url").value,as:$("e-as").value,range:$("e-range").value,
+    ids:$("e-ids").value,marker:$("e-marker").value,delay:$("e-delay").value,max:$("e-max").value});
+    renderEnum(d); $("enum-results").style.display="block";
+  }catch(e){showErr(String(e.message||e));}finally{$("enum").disabled=false;$("enumstate").textContent="";}};
+function renderEnum(d){
+  let s=`<div class="summary"><span class="vchip v-HIT">${d.hit} HIT</span><span class="vchip v-MISS">${d.miss} MISS</span>`+
+    `<span class="chip">${d.distinct} distinct</span><span class="chip">${d.total} total</span></div>`;
+  if(d.mass_bola)s+=`<p class="big" style="color:var(--red);margin:10px 0">⚠ mass BOLA — ${esc(d.identity)} (${esc(d.role)}) read ${d.hit} objects it doesn't own.</p>`;
+  s+=`<p class="hint">as <span class="mono">${esc(d.identity)}</span> on <span class="mono">${esc(d.url_template)}</span></p>`;
+  if(d.hit_ids&&d.hit_ids.length)s+=`<p class="mono" style="font-size:12px">accessible IDs: ${d.hit_ids.slice(0,40).map(esc).join(", ")}${d.hit_ids.length>40?" …":""}</p>`;
+  $("enum-summary").innerHTML=s; $("enum-body").innerHTML="";}
 </script>
 </body>
 </html>

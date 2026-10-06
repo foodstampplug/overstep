@@ -46,6 +46,20 @@ class GuiRunTest(unittest.TestCase):
         with self.assertRaises(gui._RunError):
             gui._do_run({"scope": "127.0.0.1", "identities": IDENTS, "requests": ""})
 
+    def test_do_enum_mass_bola(self):
+        with mock_target() as base:
+            res = gui._do_enum({
+                "scope": "127.0.0.1", "identities": IDENTS, "as": "bob",
+                "url": f"{base}/api/record/§ID§", "range": "1-60", "delay": 0,
+            })
+        self.assertEqual(res["hit"], 50)
+        self.assertTrue(res["mass_bola"])
+        self.assertGreaterEqual(res["distinct"], 50)
+
+    def test_do_enum_requires_url(self):
+        with self.assertRaises(gui._RunError):
+            gui._do_enum({"scope": "127.0.0.1", "identities": IDENTS, "as": "bob", "range": "1-5"})
+
     def test_page_injects_token_and_version(self):
         page = gui._page("DEADBEEFCAFE")
         self.assertIn("DEADBEEFCAFE", page)

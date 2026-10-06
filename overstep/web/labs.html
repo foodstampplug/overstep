@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>overstep labs</title>
+<style>
+  :root{--bg:#0d1117;--panel:#161b22;--panel2:#0b0f14;--line:#232b36;--fg:#e6edf3;
+    --muted:#8b949e;--accent:#39d0d8;--red:#ff6b6b;--amber:#f2c661;--green:#4ec97a;--radius:10px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--fg);
+    font:14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  header{border-bottom:1px solid var(--line);padding:18px 24px;background:var(--panel2);
+    display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+  header .wm{font-family:ui-monospace,monospace;font-weight:700;font-size:21px;color:var(--accent)}
+  header .ver{color:var(--muted);font-size:12px}
+  header .tag{color:var(--muted);font-size:12px;margin-left:auto}
+  main{max-width:900px;margin:0 auto;padding:22px 16px;display:grid;gap:16px}
+  .intro{color:var(--muted);font-size:13px}
+  .intro code{color:var(--fg)}
+  .bar{height:8px;background:var(--panel2);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .bar>i{display:block;height:100%;background:var(--green);width:0;transition:width .3s}
+  .prog{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)}
+  .lab{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .lab.solved{border-color:var(--green)}
+  .lab h3{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pill{font-size:10.5px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+  .pill.d-warm-up{color:var(--green)} .pill.d-easy{color:var(--green)}
+  .pill.d-medium{color:var(--amber)} .pill.d-hard{color:var(--red)}
+  .ep{font-size:12px;color:var(--accent)}
+  .obj{margin:8px 0}
+  details{margin:6px 0;font-size:13px}
+  summary{cursor:pointer;color:var(--accent)}
+  details ul{margin:6px 0 0 0;padding-left:18px;color:var(--muted)}
+  .over{font-size:12.5px;color:var(--muted);border-left:2px solid var(--line);padding-left:10px;margin:8px 0}
+  .submit{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .submit input{flex:1;min-width:180px;background:var(--panel2);color:var(--fg);
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-family:ui-monospace,monospace;font-size:12.5px}
+  .btn{background:var(--accent);color:#04181a;border:0;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
+  .btn:hover{filter:brightness(1.08)}
+  .ok{color:var(--green);font-size:12.5px} .bad{color:var(--red);font-size:12.5px}
+  .solvedtag{color:var(--green);font-size:12px}
+  .foot{color:var(--muted);font-size:11.5px;text-align:center;padding:12px}
+</style>
+</head>
+<body>
+<header>
+  <span class="wm">overstep labs</span><span class="ver">v__OVERSTEP_VERSION__</span>
+  <span class="tag">bug-hunter training range · <span class="mono">intentionally vulnerable · localhost only</span></span>
+</header>
+<main>
+  <p class="intro">Work each lab with <code>overstep</code>, <code>curl</code>, or Burp against this server
+    (<span class="mono" id="origin"></span>). Exploit it, grab the <b>FLAG{…}</b> it returns, paste it below.
+    Log in by sending <code class="mono">Cookie: session=BOB</code> (also ALICE, CAROL).</p>
+  <div class="prog"><div class="bar" style="flex:1"><i id="barfill"></i></div><span id="progtxt">0 / 0</span></div>
+  <div id="labs"></div>
+  <div class="foot">overstep labs — authorized practice only · built by Dev (@foodstampplug)</div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+document.getElementById("origin").textContent = location.origin;
+let SOLVED = new Set();
+
+async function load(){
+  const [cat, prog] = await Promise.all([
+    fetch("/api/catalog").then(r=>r.json()),
+    fetch("/api/progress").then(r=>r.json())
+  ]);
+  SOLVED = new Set(prog.solved);
+  render(cat.labs);
+  updateProg(cat.labs.length);
+}
+function updateProg(total){
+  const n = SOLVED.size;
+  $("#progtxt").textContent = `${n} / ${total} solved`;
+  $("#barfill").style.width = total ? (100*n/total)+"%" : "0";
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function render(labs){
+  $("#labs").innerHTML = labs.map(l=>{
+    const solved = SOLVED.has(l.slug);
+    return `<div class="lab ${solved?'solved':''}" id="lab-${l.slug}">
+      <h3>${esc(l.title)}
+        <span class="pill d-${l.difficulty.replace(/\\s/g,'-')}">${esc(l.difficulty)}</span>
+        <span class="pill">${esc(l.klass)}</span>
+        ${solved?'<span class="solvedtag">✓ solved</span>':''}</h3>
+      <div class="ep mono">${esc(l.endpoint)}</div>
+      <p class="obj">${esc(l.objective)}</p>
+      <details><summary>Hints</summary><ul>${l.hints.map(h=>`<li>${esc(h)}</li>`).join("")}</ul></details>
+      <div class="over">↳ ${esc(l.overstep)}</div>
+      <details><summary>Reveal solution</summary><p class="mono" style="color:var(--muted)">${esc(l.solution)}</p></details>
+      <div class="submit">
+        <input class="mono" placeholder="FLAG{...}" id="in-${l.slug}">
+        <button class="btn" onclick="submit('${l.slug}')">Submit flag</button>
+        <span id="msg-${l.slug}"></span>
+      </div></div>`;
+  }).join("");
+}
+async function submit(slug){
+  const flag = $("#in-"+slug).value.trim();
+  const r = await fetch("/api/submit",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({lab:slug,flag})}).then(r=>r.json());
+  const msg = $("#msg-"+slug);
+  if(r.ok){ SOLVED = new Set(r.solved); msg.innerHTML='<span class="ok">✓ correct!</span>';
+    load(); }
+  else { msg.innerHTML='<span class="bad">✗ not it — exploit the endpoint to get the real flag</span>'; }
+}
+load();
+</script>
+</body>
+</html>

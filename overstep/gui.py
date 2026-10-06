@@ -24,7 +24,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from . import __version__, report
-from .capture import parse_text
+from .capture import CapturedRequest, parse_text
+from .enumerate import EnumError, enumerate_ids, expand_ids
 from .identities import IdentityError, IdentitySet
 from .replay import SAFE_METHODS, WRITE_METHODS, run as replay_run
 from .scope import Scope
@@ -86,6 +87,55 @@ def _do_run(req: dict) -> dict:
     }
 
 
+def _do_enum(req: dict) -> dict:
+    scope_text = (req.get("scope") or "").strip()
+    if not scope_text:
+        raise _RunError("Scope is required.")
+    scope = Scope.from_lines(scope_text.splitlines())
+    if not scope.includes:
+        raise _RunError("Scope has no in-scope rules.")
+    try:
+        idset = IdentitySet.from_dict(json.loads(req.get("identities") or "{}"))
+    except (IdentityError, ValueError) as exc:
+        raise _RunError(f"Identities: {exc}")
+
+    name = req.get("as")
+    if name:
+        matches = [i for i in idset.identities if i.name == name]
+        if not matches:
+            raise _RunError(f"No identity named {name!r}.")
+        identity = matches[0]
+    else:
+        cands = idset.candidates()
+        if not cands:
+            raise _RunError("No non-owner identity to enumerate as.")
+        identity = cands[0]
+
+    url = (req.get("url") or "").strip()
+    if not url:
+        raise _RunError("A URL template with the ID marker is required.")
+    marker = req.get("marker") or "§ID§"
+    base = CapturedRequest(req.get("method", "GET").upper(), url, {}, None, "gui")
+    try:
+        ids = expand_ids(req.get("range") or None, req.get("ids") or None, None,
+                         cap=int(req.get("max", 200) or 200))
+        result = enumerate_ids(base, identity, idset.auth_headers, scope, ids,
+                               marker=marker, delay=float(req.get("delay", 0.3) or 0),
+                               verify=bool(req.get("verify")))
+    except EnumError as exc:
+        raise _RunError(str(exc))
+
+    return {
+        "identity": result.identity_name, "role": result.identity_role,
+        "url_template": result.url_template, "total": result.total,
+        "hit": result.n_hit, "miss": result.n_miss, "error": result.n_error,
+        "distinct": result.distinct, "mass_bola": result.mass_bola,
+        "hit_ids": result.hit_ids(),
+        "results": [{"id": h.id, "verdict": h.verdict, "status": h.status, "length": h.length}
+                    for h in result.hits],
+    }
+
+
 class _Handler(BaseHTTPRequestHandler):
     server_version = f"overstep/{__version__}"
     token = ""  # set on the class before serving
@@ -116,7 +166,8 @@ class _Handler(BaseHTTPRequestHandler):
         self._send(200, _page(self.token).encode("utf-8"), "text/html; charset=utf-8")
 
     def do_POST(self):
-        if self.path.split("?", 1)[0] != "/api/run":
+        route = self.path.split("?", 1)[0]
+        if route not in ("/api/run", "/api/enum"):
             return self._json(404, {"error": "not found"})
         if not self._is_local():
             return self._json(403, {"error": "non-local Host header refused"})
@@ -129,7 +180,8 @@ class _Handler(BaseHTTPRequestHandler):
         if not secrets.compare_digest(str(req.get("token", "")), self.token):
             return self._json(403, {"error": "bad or missing session token"})
         try:
-            return self._json(200, _do_run(req))
+            handler = _do_run if route == "/api/run" else _do_enum
+            return self._json(200, handler(req))
         except _RunError as exc:
             return self._json(400, {"error": str(exc)})
         except Exception as exc:  # noqa: BLE001 - report, don't crash the server

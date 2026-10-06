@@ -130,7 +130,7 @@ The bug label is assigned from the candidate's role (`peer` → BOLA, `lowpriv` 
 - **Markdown** (`--md`): a per-finding report draft with evidence and repro steps, shaped to
   drop into Trapline's report generator (fill in severity + impact).
 
-## GUI
+## GUI (Pro dashboard)
 
 Prefer a browser? overstep ships a local web GUI — zero extra dependencies, served by the
 Python stdlib and bound to localhost, so your target data never leaves the box.
@@ -140,13 +140,29 @@ overstep gui                 # opens http://127.0.0.1:8000 in your browser
 overstep gui --port 9000 --no-browser
 ```
 
-Paste your scope, identities, and a HAR/raw capture (or load them from a file), hit **Run
-differential**, and read the colour-coded matrix — red `BYPASSED`, amber `UNCLEAR`, green
-`ENFORCED`. Download the JSON findings or the Markdown report draft straight from the page.
+Three tabs over shared scope + identities: **Run** (the differential matrix — red `BYPASSED`,
+amber `UNCLEAR`, green `ENFORCED`, with JSON/Markdown download), **Enum** (walk an ID range and
+see the mass-BOLA count), and **Labs** (launch the training range). Safe by construction: binds
+to `127.0.0.1`, `/api/run` + `/api/enum` require a per-session token embedded in the page, and
+the scope gate governs every request. The engine behind the page is exactly the CLI's.
 
-It's safe by construction: it binds to `127.0.0.1`, `/api/run` requires a per-session token
-embedded in the page (so a random site in your browser can't drive it), and the same scope
-gate governs every request. The engine behind the page is exactly the CLI's.
+**Desktop launcher (Windows + WSL):** `desktop/` holds a double-click launcher (`overstep.bat`),
+a generated icon (`overstep.ico`), and a PowerShell shortcut-maker — put them on your Desktop and
+run the `.ps1` once for an **overstep** icon that opens the Pro GUI. See `desktop/README.md`
+(includes the PyInstaller recipe for a true `.exe`).
+
+## Labs — the bug-hunter training range
+
+```bash
+overstep labs                # 12 intentionally-vulnerable labs on http://127.0.0.1:8800
+```
+
+A localhost range of **12 guided labs** — IDOR, BOLA, missing-auth, privilege escalation,
+mass-assignment, price manipulation, a **live race condition**, reflected XSS, open redirect,
+SSRF, JWT `none`-algorithm forgery, and prompt injection. Each has an objective, hints, a "how
+overstep helps" note, and a hidden **flag** you only get by exploiting it — submit the flag and
+the range tracks your progress. Point `overstep run`/`enum`, `curl`, or Burp at it and learn by
+doing. Intentionally vulnerable, localhost only — never deploy it.
 
 ## Enumerate — scale a BOLA
 
@@ -181,7 +197,8 @@ overstep run        -r <requests> -i <identities> -s <scope> [--md f] [-o f] [--
                     [--verify] [--timeout 15] [--scheme https|http]
 overstep enum       (--url '…/§ID§' | -r <req>) -i <identities> -s <scope> --as <name>
                     (--range A-B[:step] | --ids 1,2,3 | --ids-file f) [--max 200] [-o f] [--all]
-overstep gui        [--host 127.0.0.1] [--port 8000] [--no-browser]
+overstep gui        [--host 127.0.0.1] [--port 8000] [--no-browser]   # Pro dashboard
+overstep labs       [--host 127.0.0.1] [--port 8800] [--no-browser]   # training range
 overstep identities template        # print a starter identities.json
 overstep identities list -i file    # validate + show identities
 overstep requests   list -r file    # parse + list captured requests (sanity check)
@@ -195,7 +212,7 @@ Stdlib `unittest` — no install, runs anywhere:
 python3 -m unittest discover -s tests -t .
 ```
 
-44 tests cover the scope gate, the classifier, HAR/raw parsing, identity loading, ID
+60 tests cover the scope gate, the classifier, HAR/raw parsing, identity loading, ID
 enumeration, the GUI run endpoint, and a full end-to-end authorization matrix against an
 in-process mock target (BOLA, privesc, missing-auth, properly-enforced, write-skip,
 out-of-scope-skip, mass-BOLA enumeration).

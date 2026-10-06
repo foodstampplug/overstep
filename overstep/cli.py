@@ -61,6 +61,11 @@ def _build_parser() -> argparse.ArgumentParser:
     g.add_argument("--port", type=int, default=8000, help="bind port (default 8000; 0 picks a free one)")
     g.add_argument("--no-browser", action="store_true", help="don't auto-open a browser")
 
+    lb = sub.add_parser("labs", help="launch the bug-hunter training range (intentionally vulnerable, localhost)")
+    lb.add_argument("--host", default="127.0.0.1", help="bind host (default 127.0.0.1; keep it local)")
+    lb.add_argument("--port", type=int, default=8800, help="bind port (default 8800; 0 picks a free one)")
+    lb.add_argument("--no-browser", action="store_true", help="don't auto-open a browser")
+
     e = sub.add_parser("enum", help="enumerate an object ID across a range as one identity (scale a BOLA)")
     e.add_argument("--url", help="URL template with the ID marker, e.g. https://api.t.com/orders/§ID§")
     e.add_argument("-r", "--requests", help="a captured request file containing the marker (instead of --url)")
@@ -262,6 +267,10 @@ def main(argv=None) -> int:
         return serve(args.host, args.port, open_browser=not args.no_browser)
     if args.command == "enum":
         return _cmd_enum(args)
+    if args.command == "labs":
+        from .labs import serve as serve_labs
+
+        return serve_labs(args.host, args.port, open_browser=not args.no_browser)
     return 2
 
 
