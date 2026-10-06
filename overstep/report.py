@@ -84,6 +84,66 @@ def render_console(run: Run, *, show_all: bool = False, stream=sys.stdout) -> No
         )
 
 
+def render_enum(result, *, show_all: bool = False, stream=sys.stdout) -> None:
+    color = _use_color(stream)
+
+    def paint(code, text):
+        return f"{code}{text}{_RESET}" if color else text
+
+    print(
+        f"enumerated {result.total} IDs as {result.identity_name} "
+        f"({result.identity_role}) on {result.method} {result.url_template}\n",
+        file=stream,
+    )
+    print(
+        f"  {result.n_hit} HIT · {result.n_miss} MISS · {result.n_error} ERROR"
+        f"  ·  {result.distinct} distinct bodies",
+        file=stream,
+    )
+    if result.mass_bola:
+        print(
+            paint(
+                _COLORS[BYPASSED],
+                f"  ⚠  mass BOLA: {result.identity_name} ({result.identity_role}) read "
+                f"{result.n_hit} objects it does not own — verify and report at scale.",
+            ),
+            file=stream,
+        )
+    ids = result.hit_ids()
+    if ids:
+        shown = ", ".join(ids[:12]) + (" …" if len(ids) > 12 else "")
+        print(f"  sample accessible IDs: {shown}", file=stream)
+    if show_all:
+        print(file=stream)
+        for h in result.hits:
+            tag = paint(_COLORS[BYPASSED], h.verdict) if h.verdict == "HIT" else h.verdict
+            print(f"    {h.id:<12} {tag:<6} status={h.status} len={h.length}", file=stream)
+
+
+def enum_to_json(result) -> str:
+    doc = {
+        "tool": "overstep",
+        "mode": "enumerate",
+        "identity": result.identity_name,
+        "role": result.identity_role,
+        "method": result.method,
+        "url_template": result.url_template,
+        "marker": result.marker,
+        "total": result.total,
+        "hit": result.n_hit,
+        "miss": result.n_miss,
+        "error": result.n_error,
+        "distinct": result.distinct,
+        "mass_bola": result.mass_bola,
+        "hit_ids": result.hit_ids(),
+        "results": [
+            {"id": h.id, "verdict": h.verdict, "status": h.status, "length": h.length, "body_hash": h.body_hash}
+            for h in result.hits
+        ],
+    }
+    return json.dumps(doc, indent=2)
+
+
 def to_json(run: Run) -> str:
     doc = {
         "tool": "overstep",

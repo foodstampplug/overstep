@@ -126,12 +126,39 @@ It's safe by construction: it binds to `127.0.0.1`, `/api/run` requires a per-se
 embedded in the page (so a random site in your browser can't drive it), and the same scope
 gate governs every request. The engine behind the page is exactly the CLI's.
 
+## Enumerate — scale a BOLA
+
+Finding that a peer can read *one* object you don't own is a bug. Showing they can walk an ID
+range and pull *hundreds* is what makes it Critical. Put a marker where the ID goes and
+enumerate as a chosen identity:
+
+```bash
+overstep enum --url 'https://api.target.com/v1/orders/§ID§' \
+  -i identities.json -s scope.txt --as bob --range 1000-1200
+```
+
+```
+enumerated 201 IDs as bob (peer) on GET https://api.target.com/v1/orders/§ID§
+  187 HIT · 14 MISS · 0 ERROR  ·  187 distinct bodies
+  ⚠  mass BOLA: bob (peer) read 187 objects it does not own — verify and report at scale.
+  sample accessible IDs: 1000, 1001, 1002, 1003, 1004, 1005 …
+```
+
+A **HIT** is a `2xx` with a real, object-sized body; **distinct bodies** is the signal that
+you're pulling per-record data (not one generic page served with `200`). The marker can sit in
+the URL, a header, or the body; use `-r` instead of `--url` to drive it from a captured request.
+Reads-only, scope-gated, and capped at 200 IDs by default (`--max` to raise, if rate rules
+allow). It counts and samples — it does **not** dump every record to disk; a PoC needs evidence
+of scale, not a copy of the data.
+
 ## Commands
 
 ```
 overstep run        -r <requests> -i <identities> -s <scope> [--md f] [-o f] [--all]
                     [--delay 0.5] [--methods GET,POST] [--include-writes]
                     [--verify] [--timeout 15] [--scheme https|http]
+overstep enum       (--url '…/§ID§' | -r <req>) -i <identities> -s <scope> --as <name>
+                    (--range A-B[:step] | --ids 1,2,3 | --ids-file f) [--max 200] [-o f] [--all]
 overstep gui        [--host 127.0.0.1] [--port 8000] [--no-browser]
 overstep identities template        # print a starter identities.json
 overstep identities list -i file    # validate + show identities
@@ -146,16 +173,17 @@ Stdlib `unittest` — no install, runs anywhere:
 python3 -m unittest discover -s tests -t .
 ```
 
-32 tests cover the scope gate, the classifier, HAR/raw parsing, identity loading, and a full
-end-to-end authorization matrix against an in-process mock target (BOLA, privesc, missing-auth,
-properly-enforced, write-skip, out-of-scope-skip).
+44 tests cover the scope gate, the classifier, HAR/raw parsing, identity loading, ID
+enumeration, the GUI run endpoint, and a full end-to-end authorization matrix against an
+in-process mock target (BOLA, privesc, missing-auth, properly-enforced, write-skip,
+out-of-scope-skip, mass-BOLA enumeration).
 
 ## Roadmap
 
-- Sequential-ID / UUID enumeration mode (walk `id=1001..` under one identity).
 - GraphQL operation matrix (pair with introspection).
 - Response field-level diffing (BOPLA — suppressed fields present in the raw body).
 - Auto-detect which captured requests are object-scoped (have an ID) to prioritize.
+- Enumeration from the GUI (today it's CLI-only).
 
 ## Author
 

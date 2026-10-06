@@ -53,6 +53,22 @@ class _Handler(BaseHTTPRequestHandler):
             # same order object returned to ANY authenticated user — the BOLA
             return self._send(200, "ORDER 1001 total $500.00 customer Alice ship 123 Main St")
 
+        if path.startswith("/api/record/"):
+            # distinct per-ID records 1..50, readable by ANY logged-in user (mass BOLA);
+            # 404 outside that range; 403 if unauthenticated.
+            if user is None:
+                return self._send(403, "forbidden")
+            rid = path.rsplit("/", 1)[1]
+            try:
+                n = int(rid)
+            except ValueError:
+                return self._send(404, "not found")
+            if 1 <= n <= 50:
+                return self._send(
+                    200, f"record {n}: owner user{n} email user{n}@corp.example balance {n * 137}"
+                )
+            return self._send(404, "not found")
+
         if path == "/admin/report":
             if user in ("ALICE", "LOW"):
                 return self._send(200, "ADMIN REPORT q3 revenue 1.2M users 48213 churn 2.1pct")

@@ -61,6 +61,24 @@ def _build_parser() -> argparse.ArgumentParser:
     g.add_argument("--port", type=int, default=8000, help="bind port (default 8000; 0 picks a free one)")
     g.add_argument("--no-browser", action="store_true", help="don't auto-open a browser")
 
+    e = sub.add_parser("enum", help="enumerate an object ID across a range as one identity (scale a BOLA)")
+    e.add_argument("--url", help="URL template with the ID marker, e.g. https://api.t.com/orders/§ID§")
+    e.add_argument("-r", "--requests", help="a captured request file containing the marker (instead of --url)")
+    e.add_argument("--method", default="GET", help="HTTP method for --url (default GET)")
+    e.add_argument("-i", "--identities", required=True, help="identities JSON file")
+    e.add_argument("-s", "--scope", required=True, help="scope file")
+    e.add_argument("--as", dest="as_identity", help="identity name to enumerate as (default: first non-owner)")
+    e.add_argument("--range", dest="range_spec", help="numeric range A-B or A-B:step")
+    e.add_argument("--ids", help="comma-separated list of IDs")
+    e.add_argument("--ids-file", help="file with one ID per line")
+    e.add_argument("--marker", default="§ID§", help="the placeholder standing in for the ID (default §ID§)")
+    e.add_argument("--max", dest="max_ids", type=int, default=200, help="safety cap on ID count (default 200)")
+    e.add_argument("--delay", type=float, default=0.5, help="seconds between requests (default 0.5)")
+    e.add_argument("--verify", action="store_true", help="verify TLS certs")
+    e.add_argument("--scheme", default="https", choices=("https", "http"))
+    e.add_argument("-o", "--json-out", help="write JSON results to this path")
+    e.add_argument("--all", action="store_true", help="list every ID result, not just the summary")
+
     return p
 
 
@@ -154,6 +172,82 @@ def _cmd_requests(args) -> int:
     return 0
 
 
+def _cmd_enum(args) -> int:
+    from .capture import CapturedRequest, load_requests
+    from .enumerate import EnumError, enumerate_ids, expand_ids
+
+    try:
+        scope = Scope.from_file(args.scope)
+    except FileNotFoundError:
+        print(f"error: scope file not found: {args.scope}", file=sys.stderr)
+        return 2
+    if not scope.includes:
+        print("error: scope file has no in-scope rules — refusing to run", file=sys.stderr)
+        return 2
+    try:
+        idset = IdentitySet.from_file(args.identities)
+    except FileNotFoundError:
+        print(f"error: identities file not found: {args.identities}", file=sys.stderr)
+        return 2
+    except (IdentityError, ValueError) as exc:
+        print(f"error: bad identities file: {exc}", file=sys.stderr)
+        return 2
+
+    if args.as_identity:
+        matches = [i for i in idset.identities if i.name == args.as_identity]
+        if not matches:
+            print(f"error: no identity named {args.as_identity!r}", file=sys.stderr)
+            return 2
+        identity = matches[0]
+    else:
+        cands = idset.candidates()
+        if not cands:
+            print("error: no non-owner identity to enumerate as", file=sys.stderr)
+            return 2
+        identity = cands[0]
+    if identity.role == "owner":
+        sys.stderr.write("!! enumerating as the owner proves nothing — pick a peer/lowpriv/unauth identity.\n")
+
+    if args.requests:
+        reqs = load_requests(args.requests, scheme=args.scheme)
+        with_marker = [
+            r for r in reqs
+            if args.marker in (r.url + "".join(r.headers.values()) + (r.body or b"").decode("utf-8", "replace"))
+        ]
+        if not with_marker:
+            print(f"error: none of the requests contain the marker {args.marker!r}", file=sys.stderr)
+            return 2
+        base = with_marker[0]
+    elif args.url:
+        base = CapturedRequest(args.method.upper(), args.url, {}, None, "cli")
+    else:
+        print("error: enum needs --url or -r/--requests", file=sys.stderr)
+        return 2
+
+    try:
+        ids = expand_ids(args.range_spec, args.ids, args.ids_file, cap=args.max_ids)
+    except EnumError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    sys.stderr.write(banner(color=_stderr_color()) + "\n")
+    try:
+        result = enumerate_ids(
+            base, identity, idset.auth_headers, scope, ids,
+            marker=args.marker, delay=args.delay, verify=args.verify,
+        )
+    except EnumError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    report.render_enum(result, show_all=args.all)
+    if args.json_out:
+        with open(args.json_out, "w", encoding="utf-8") as fh:
+            fh.write(report.enum_to_json(result))
+        print(f"\nJSON results → {args.json_out}", file=sys.stderr)
+    return 3 if result.n_hit else 0
+
+
 def main(argv=None) -> int:
     args = _build_parser().parse_args(argv)
     if args.command == "run":
@@ -166,6 +260,8 @@ def main(argv=None) -> int:
         from .gui import serve
 
         return serve(args.host, args.port, open_browser=not args.no_browser)
+    if args.command == "enum":
+        return _cmd_enum(args)
     return 2
 
 
