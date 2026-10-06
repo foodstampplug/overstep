@@ -140,6 +140,6 @@ properly-enforced, write-skip, out-of-scope-skip).
 
 ## Author
 
-Built and maintained by **Dev**. Issues and ideas welcome.
+Built and maintained by **Dev** ([@foodstampplug](https://github.com/foodstampplug)). Issues and ideas welcome.
 
 Licensed MIT. Built for authorized testing only — in scope, non-destructive, your own targets.
