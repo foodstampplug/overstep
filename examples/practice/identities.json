@@ -1,0 +1,8 @@
+{
+  "identities": [
+    {"name": "alice", "role": "owner",   "headers": {"Cookie": "session=ALICE"}},
+    {"name": "bob",   "role": "peer",     "headers": {"Cookie": "session=BOB"}},
+    {"name": "carol", "role": "lowpriv",  "headers": {"Cookie": "session=CAROL"}},
+    {"name": "anon",  "role": "unauth",   "headers": {}}
+  ]
+}

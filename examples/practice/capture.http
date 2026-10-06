@@ -1,0 +1,18 @@
+GET /api/orders/1005 HTTP/1.1
+Host: 127.0.0.1:8799
+Cookie: session=ALICE
+
+>>>>
+GET /admin/export HTTP/1.1
+Host: 127.0.0.1:8799
+Cookie: session=ALICE
+
+>>>>
+GET /api/me HTTP/1.1
+Host: 127.0.0.1:8799
+Cookie: session=ALICE
+
+>>>>
+GET /api/public/stats HTTP/1.1
+Host: 127.0.0.1:8799
+Cookie: session=ALICE

@@ -49,6 +49,28 @@ python3 -m overstep --version
 # optional: pip install -e .   (gives you the `overstep` command)
 ```
 
+## Try it in 60 seconds (practice lab)
+
+A safe, intentionally-broken local target ships in `examples/`. No real target, nothing live.
+
+```bash
+python3 examples/practice_target.py &            # vulnerable sandbox on 127.0.0.1:8799
+
+# find the bugs
+python3 -m overstep run  -r examples/practice/capture.http \
+  -i examples/practice/identities.json -s examples/practice/scope.txt --scheme http
+
+# scale the BOLA
+python3 -m overstep enum --url 'http://127.0.0.1:8799/api/records/§ID§' \
+  -i examples/practice/identities.json -s examples/practice/scope.txt \
+  --as bob --range 1-120 --scheme http
+```
+
+You'll see `bob` and `carol` reach another user's order and the admin export, an unauthenticated
+hit on a should-be-private endpoint, and 100 records pulled by a peer. (`/api/me` comes back
+`UNCLEAR` — that's the tool correctly flagging a half-similar 200 for you to eyeball; it's
+carol's *own* profile, so you'd dismiss it.)
+
 ## Quickstart
 
 1. **Capture traffic as your owner account.** Browse the target logged in as user A, then
