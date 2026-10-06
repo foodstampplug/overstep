@@ -108,12 +108,31 @@ The bug label is assigned from the candidate's role (`peer` → BOLA, `lowpriv` 
 - **Markdown** (`--md`): a per-finding report draft with evidence and repro steps, shaped to
   drop into Trapline's report generator (fill in severity + impact).
 
+## GUI
+
+Prefer a browser? overstep ships a local web GUI — zero extra dependencies, served by the
+Python stdlib and bound to localhost, so your target data never leaves the box.
+
+```bash
+overstep gui                 # opens http://127.0.0.1:8000 in your browser
+overstep gui --port 9000 --no-browser
+```
+
+Paste your scope, identities, and a HAR/raw capture (or load them from a file), hit **Run
+differential**, and read the colour-coded matrix — red `BYPASSED`, amber `UNCLEAR`, green
+`ENFORCED`. Download the JSON findings or the Markdown report draft straight from the page.
+
+It's safe by construction: it binds to `127.0.0.1`, `/api/run` requires a per-session token
+embedded in the page (so a random site in your browser can't drive it), and the same scope
+gate governs every request. The engine behind the page is exactly the CLI's.
+
 ## Commands
 
 ```
 overstep run        -r <requests> -i <identities> -s <scope> [--md f] [-o f] [--all]
                     [--delay 0.5] [--methods GET,POST] [--include-writes]
                     [--verify] [--timeout 15] [--scheme https|http]
+overstep gui        [--host 127.0.0.1] [--port 8000] [--no-browser]
 overstep identities template        # print a starter identities.json
 overstep identities list -i file    # validate + show identities
 overstep requests   list -r file    # parse + list captured requests (sanity check)
