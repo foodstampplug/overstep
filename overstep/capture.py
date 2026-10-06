@@ -115,6 +115,15 @@ def _parse_one_raw(text: str, scheme: str, source: str) -> CapturedRequest | Non
 
 
 # ---- dispatch --------------------------------------------------------------
+def parse_text(text: str, scheme: str = "https", source: str = "input") -> list[CapturedRequest]:
+    """Parse captured requests from a string (HAR JSON or raw HTTP), auto-detecting
+    which. Used by the GUI, where requests arrive pasted rather than as a file."""
+    stripped = text.lstrip()
+    if stripped.startswith("{") and '"log"' in stripped[:200]:
+        return parse_har(text, source=source)
+    return parse_raw(text, scheme=scheme, source=source)
+
+
 def load_requests(path: str, scheme: str = "https") -> list[CapturedRequest]:
     if os.path.isdir(path):
         out: list[CapturedRequest] = []
@@ -131,7 +140,4 @@ def _load_file(path: str, scheme: str) -> list[CapturedRequest]:
         text = fh.read()
     if path.lower().endswith(".har"):
         return parse_har(text, source=os.path.basename(path))
-    stripped = text.lstrip()
-    if stripped.startswith("{") and '"log"' in stripped[:200]:
-        return parse_har(text, source=os.path.basename(path))
-    return parse_raw(text, scheme=scheme, source=os.path.basename(path))
+    return parse_text(text, scheme=scheme, source=os.path.basename(path))

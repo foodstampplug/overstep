@@ -22,3 +22,6 @@ overstep = "overstep.cli:main"
 
 [tool.setuptools]
 packages = ["overstep"]
+
+[tool.setuptools.package-data]
+overstep = ["web/*.html"]

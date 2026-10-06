@@ -56,6 +56,11 @@ def _build_parser() -> argparse.ArgumentParser:
     q.add_argument("-r", "--requests", required=True)
     q.add_argument("--scheme", default="https", choices=("https", "http"))
 
+    g = sub.add_parser("gui", help="launch the local web GUI")
+    g.add_argument("--host", default="127.0.0.1", help="bind host (default 127.0.0.1; keep it local)")
+    g.add_argument("--port", type=int, default=8000, help="bind port (default 8000; 0 picks a free one)")
+    g.add_argument("--no-browser", action="store_true", help="don't auto-open a browser")
+
     return p
 
 
@@ -157,6 +162,10 @@ def main(argv=None) -> int:
         return _cmd_identities(args)
     if args.command == "requests":
         return _cmd_requests(args)
+    if args.command == "gui":
+        from .gui import serve
+
+        return serve(args.host, args.port, open_browser=not args.no_browser)
     return 2
 
 
