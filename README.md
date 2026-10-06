@@ -1,5 +1,11 @@
 # overstep
 
+[![python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![license](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![dependencies](https://img.shields.io/badge/dependencies-0-brightgreen.svg)](pyproject.toml)
+[![tests](https://img.shields.io/badge/tests-32%20passing-brightgreen.svg)](tests/)
+[![status](https://img.shields.io/badge/status-active-success.svg)](https://github.com/foodstampplug/overstep)
+
 **Authorization / BOLA differential tester.** Replay captured HTTP requests under multiple
 identities — owner, a peer user, a low-privilege user, unauthenticated — diff every response
 against the owner's baseline, and flag where an identity reached something it shouldn't:
@@ -132,4 +138,8 @@ properly-enforced, write-skip, out-of-scope-skip).
 - Response field-level diffing (BOPLA — suppressed fields present in the raw body).
 - Auto-detect which captured requests are object-scoped (have an ID) to prioritize.
 
-Licensed MIT. Built for authorized testing only.
+## Author
+
+Built and maintained by **Dev**. Issues and ideas welcome.
+
+Licensed MIT. Built for authorized testing only — in scope, non-destructive, your own targets.

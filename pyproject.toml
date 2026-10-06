@@ -9,7 +9,8 @@ description = "Authorization / BOLA differential tester — replay captured requ
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [{ name = "foodstampplug" }]
+authors = [{ name = "Dev" }]
+maintainers = [{ name = "Dev" }]
 keywords = ["bug-bounty", "security", "authorization", "idor", "bola", "bfla", "pentest"]
 dependencies = []
 
